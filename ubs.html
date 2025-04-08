@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Leitura de USB e Envio para Firebase</title>
+  <style>
+    #dataContainer {
+      margin-top: 20px;
+      font-family: Arial, sans-serif;
+    }
+  </style>
+</head>
+<body>
+  <h1>Leitura de USB e Envio ao Firebase</h1>
+  <p>Os dados da porta USB serão exibidos abaixo em tempo real:</p>
+  <div id="dataContainer"></div>
+
+  <script>
+    // Conectar ao WebSocket
+    const socket = new WebSocket('ws://localhost:8080');
+
+    // Quando o WebSocket abrir
+    socket.onopen = function(event) {
+      console.log('Conectado ao WebSocket');
+    };
+
+    // Quando receber uma mensagem do WebSocket (dados da porta USB)
+    socket.onmessage = function(event) {
+      const data = event.data;
+      console.log('Dados recebidos do WebSocket:', data);
+
+      // Exibir os dados no HTML
+      const dataContainer = document.getElementById('dataContainer');
+      const newDataElement = document.createElement('p');
+      newDataElement.textContent = `Dados da USB: ${data}`;
+      dataContainer.appendChild(newDataElement);
+    };
+
+    // Quando o WebSocket fechar
+    socket.onclose = function(event) {
+      console.log('WebSocket desconectado');
+    };
+
+    // Quando houver erro no WebSocket
+    socket.onerror = function(error) {
+      console.error('Erro no WebSocket:', error);
+    };
+  </script>
+</body>
+</html>
