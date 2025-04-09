@@ -52,40 +52,50 @@ myserialparser.on('data', function(data) {
 
   // Verifica se recebemos todas as linhas de uma leitura
   if (areaData.length >= 8) { // Esperamos 8 linhas por leitura
-    // Armazena as medições nas variáveis apropriadas
-    const solo1 = areaData[1];                // Solo Seco da Área 1
-    const mbomba1 = areaData[2];              // M.Bomba 1
-    const umidade1 = areaData[3].split('=')[1].trim(); // Umidade 0
-    
-    const solo2 = areaData[5];                // Solo Seco da Área 2
-    const mbomba2 = areaData[6];              // M.Bomba 2
-    const umidade2 = areaData[7].split('=')[1].trim(); // Umidade 1
+    try {
+      // Valida se os dados estão no formato esperado
+      const umidade1 = areaData[3]?.split('=')[1]?.trim() || 'N/A'; // Umidade 0
+      const umidade2 = areaData[7]?.split('=')[1]?.trim() || 'N/A'; // Umidade 1
 
-    // Exibe as medições armazenadas
-    console.log(`Medições: 
-      Solo 1: ${solo1}, 
-      M.Bomba 1: ${mbomba1}, 
-      Umidade 1: ${umidade1}, 
-      Solo 2: ${solo2}, 
-      M.Bomba 2: ${mbomba2}, 
-      Umidade 2: ${umidade2}`);
+      if (!umidade1 || !umidade2) {
+        throw new Error('Dados de umidade inválidos ou incompletos');
+      }
 
-    // Cria um novo nó no Firebase com as medições
-    const measurementData = {
-      timestamp: Date.now(), // Adiciona o timestamp
-      solo1: solo1,
-      mbomba1: mbomba1,
-      umidade1: umidade1,
-      solo2: solo2,
-      mbomba2: mbomba2,
-      umidade2: umidade2
-    };
+      // Armazena as medições nas variáveis apropriadas
+      const solo1 = areaData[1];
+      const mbomba1 = areaData[2];
+      const solo2 = areaData[5];
+      const mbomba2 = areaData[6];
 
-    // Envia os dados para o Firebase
-    const dbRef = ref(db, 'medicoes/' + Date.now()); // Usa timestamp para criar um novo nó
-    set(dbRef, measurementData)
-      .then(() => console.log('Medições armazenadas com sucesso no Firebase!'))
-      .catch((error) => console.error('Erro ao armazenar medições no Firebase:', error));
+      // Exibe as medições armazenadas
+      console.log(`Medições: 
+        Solo 1: ${solo1}, 
+        M.Bomba 1: ${mbomba1}, 
+        Umidade 1: ${umidade1}, 
+        Solo 2: ${solo2}, 
+        M.Bomba 2: ${mbomba2}, 
+        Umidade 2: ${umidade2}`);
+
+      // Cria um novo nó no Firebase com as medições
+      const measurementData = {
+        timestamp: Date.now(),
+        solo1: solo1,
+        mbomba1: mbomba1,
+        umidade1: umidade1,
+        solo2: solo2,
+        mbomba2: mbomba2,
+        umidade2: umidade2,
+      };
+
+      // Envia os dados para o Firebase
+      const dbRef = ref(db, 'medicoes/' + Date.now());
+      set(dbRef, measurementData)
+        .then(() => console.log('Medições armazenadas com sucesso no Firebase!'))
+        .catch((error) => console.error('Erro ao armazenar medições no Firebase:', error));
+
+    } catch (error) {
+      console.error('Erro ao processar os dados recebidos:', error.message);
+    }
 
     // Limpa o buffer para a próxima leitura
     areaData = [];
